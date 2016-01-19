@@ -1,0 +1,15 @@
+<ion-view view-title="Touch gestures example">
+
+  <ion-content class="padding"
+               id="content"
+               on-hold="onGesture('Hold')"
+               on-double-tap="onGesture('Double-Tap')"
+               scroll="false"
+               on-drag="dragEvent($event)">
+
+               <p>Tap X : {{data.tapX}}</p>
+               <p>Tap Y : {{data.tapY}}</p>
+
+  </ion-content>
+  </ion-content>
+</ion-view>

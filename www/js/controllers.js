@@ -14,7 +14,10 @@ angular.module('starter.controllers', [])
 
 .controller('TouchpadCtrl', function($scope, $rootScope, $ionicGesture, socket) {
   var touchpad = angular.element(document.querySelector('#touchpad'));
-
+  var previousX;
+  var previousY;
+  var currentx;
+  var currenty;
   $ionicGesture.on('dragstart', function(e){
     $scope.$apply(function() {
       socket.emit('dragstart', {});
@@ -23,9 +26,11 @@ angular.module('starter.controllers', [])
 
   }, touchpad);
   $ionicGesture.on('dragend', function(e){
+    // lastknownX = Math.floor(event.gesture.touches[0].screenX);
+    // lastknownY = Math.floor(event.gesture.touches[0].screenY);
+    console.log('Dragend');
     $scope.$apply(function() {
       socket.emit('dragend', {});
-      console.log('Dragend');
     });
   }, touchpad);
 
@@ -38,6 +43,8 @@ angular.module('starter.controllers', [])
 
   $ionicGesture.on('touch', function(e){
     $scope.$apply(function() {
+      previousX = Math.floor(event.gesture.touches[0].screenX);
+      previousY = Math.floor(event.gesture.touches[0].screenY);
       socket.emit('touch', {});
       console.log('Touch.');
     });
@@ -62,9 +69,9 @@ angular.module('starter.controllers', [])
      tapY : ""
    };
   $scope.dragEvent = function(event) {
-      $scope.data.tapX = Math.floor(event.gesture.touches[0].screenX);
-      $scope.data.tapY = Math.floor(event.gesture.touches[0].screenY);
+      $scope.data.tapX = Math.floor(event.gesture.touches[0].screenX - previousX)/10;
+      $scope.data.tapY = Math.floor(event.gesture.touches[0].screenY - previousY)/10;
+      console.log("Should be: " + $scope.data.tapY + " " + $scope.data.tapY);
       socket.emit('dragging', {x: $scope.data.tapX, y: $scope.data.tapY});
     };
-
   });

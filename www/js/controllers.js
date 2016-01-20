@@ -18,8 +18,11 @@ angular.module('starter.controllers', [])
   var previousY;
   var currentx;
   var currenty;
+  var x = false;
   $ionicGesture.on('dragstart', function(e){
     $scope.$apply(function() {
+      previousX = event.gesture.touches[0].screenX;
+      previousY = event.gesture.touches[0].screenY;
       socket.emit('dragstart', {});
       console.log('Dragstart');
     });
@@ -43,8 +46,6 @@ angular.module('starter.controllers', [])
 
   $ionicGesture.on('touch', function(e){
     $scope.$apply(function() {
-      previousX = Math.floor(event.gesture.touches[0].screenX);
-      previousY = Math.floor(event.gesture.touches[0].screenY);
       socket.emit('touch', {});
       console.log('Touch.');
     });
@@ -69,8 +70,8 @@ angular.module('starter.controllers', [])
      tapY : ""
    };
   $scope.dragEvent = function(event) {
-      $scope.data.tapX = Math.floor(event.gesture.touches[0].screenX - previousX)/10;
-      $scope.data.tapY = Math.floor(event.gesture.touches[0].screenY - previousY)/10;
+      $scope.data.tapX = event.gesture.touches[0].screenX - previousX;
+      $scope.data.tapY = event.gesture.touches[0].screenY - previousY;
       console.log("Should be: " + $scope.data.tapY + " " + $scope.data.tapY);
       socket.emit('dragging', {x: $scope.data.tapX, y: $scope.data.tapY});
     };

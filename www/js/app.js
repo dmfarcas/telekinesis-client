@@ -28,8 +28,13 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ngCordova'])
     }
   };
 })
-
-
+.factory('focus', function ($rootScope, $timeout) {
+  return function(name) {
+    $timeout(function (){
+      $rootScope.$broadcast('focusOn', name);
+    });
+  };
+})
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {

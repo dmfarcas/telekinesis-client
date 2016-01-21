@@ -12,15 +12,31 @@ angular.module('starter.controllers', [])
 
 })
 
-.controller('TouchpadCtrl', function($scope, $rootScope, $ionicGesture, socket, $cordovaVibration) {
+.controller('TouchpadCtrl', function($scope, $rootScope, $ionicGesture, socket, $cordovaVibration, focus) {
   var touchpad = angular.element(document.querySelector('#touchpad'));
   var previousX,
           previousY,
           currentx,
           currenty;
-  var x = false;
+  var isvisible = false;
   ionic.Platform.fullScreen(true, false);
+  $scope.showKeyboard = function() {
+    if (!isvisible) {
+      console.log("Showing.");
+      focus('focusMe');
+      // cordova.plugins.Keyboard.show();
+      isvisible = true;
+    } else {
+      // cordova.plugins.Keyboard.close();
+      isvisible = false;
+      console.log("Hiding");
+    }
+  };
 
+
+
+
+    // ionic.Platform.Keyboard.show();
   $ionicGesture.on('dragstart', function(e){
     ionic.Platform.fullScreen(true, false);
     $scope.$apply(function() {
@@ -96,4 +112,31 @@ angular.module('starter.controllers', [])
       console.log("Should be: " + $scope.data.tapY + " " + $scope.data.tapY);
       socket.emit('dragging', {x: $scope.data.tapX, y: $scope.data.tapY});
     };
-  });
+  })
+  .directive('focusOn', function() {
+   return function(scope, elem, attr) {
+      scope.$on('focusOn', function(e, name) {
+        if(name === attr.focusOn) {
+          elem[0].focus();
+        }
+      });
+   };
+})
+.directive('keypressEvents', [
+  '$document',
+  '$rootScope',
+  'socket',
+  function($document, $rootScope, socket) {
+    return {
+      restrict: 'A',
+      link: function() {
+        $document.bind('keydown', function(e) {
+          console.log(String.fromCharCode(e.keyCode) + " " + e.shiftKey + " " +String.fromCharCode(e.which)   + " " + e);
+          socket.emit('keypress', {key: e});
+          $rootScope.$broadcast('keypress', e);
+          $rootScope.$broadcast('keypress:' + e.which, e);
+        });
+      }
+    };
+  }
+]);

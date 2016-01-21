@@ -10,10 +10,14 @@ html, body {
   padding:0;
   margin:0;
 
-  top:4.5%;
+  top:10%;
   left:0;
 
   width: 100%;
   height: 100%;
-  background: grey;
+  background: white;
+}
+
+.ion-compose {
+  font-size: 30px;
 }

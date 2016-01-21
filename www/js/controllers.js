@@ -12,14 +12,17 @@ angular.module('starter.controllers', [])
 
 })
 
-.controller('TouchpadCtrl', function($scope, $rootScope, $ionicGesture, socket) {
+.controller('TouchpadCtrl', function($scope, $rootScope, $ionicGesture, socket, $cordovaVibration) {
   var touchpad = angular.element(document.querySelector('#touchpad'));
-  var previousX;
-  var previousY;
-  var currentx;
-  var currenty;
+  var previousX,
+          previousY,
+          currentx,
+          currenty;
   var x = false;
+  ionic.Platform.fullScreen(true, false);
+
   $ionicGesture.on('dragstart', function(e){
+    ionic.Platform.fullScreen(true, false);
     $scope.$apply(function() {
       previousX = event.gesture.touches[0].screenX;
       previousY = event.gesture.touches[0].screenY;
@@ -39,6 +42,7 @@ angular.module('starter.controllers', [])
 
   $ionicGesture.on('hold', function(e){
     $scope.$apply(function() {
+      $cordovaVibration.vibrate(100);
       socket.emit('hold', {});
       console.log('Hold.');
     });
@@ -62,6 +66,23 @@ angular.module('starter.controllers', [])
     $scope.$apply(function() {
       socket.emit('tap', {});
       console.log('Tapped.');
+    });
+  }, touchpad);
+
+
+
+
+  $ionicGesture.on('swipeup', function(e){
+    $scope.$apply(function() {
+      socket.emit('swipeup', {});
+      console.log('Swiping up...');
+    });
+  }, touchpad);
+
+  $ionicGesture.on('swipedown', function(e){
+    $scope.$apply(function() {
+      socket.emit('swipedown', {});
+      console.log('Swiping down...');
     });
   }, touchpad);
 

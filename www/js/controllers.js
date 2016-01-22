@@ -1,21 +1,13 @@
 angular.module('starter.controllers', [])
 
 .controller('AppCtrl', function($scope, $ionicModal, $timeout) {
-
-  // With the new view caching in Ionic, Controllers are only called
-  // when they are recreated or on app start, instead of every page change.
-  // To listen for when this page is active (for example, to refresh data),
-  // listen for the $ionicView.enter event:
-  //$scope.$on('$ionicView.enter', function(e) {
-  //});
-
-
+  // code goes here
 })
 
-.controller('TouchpadCtrl', function($scope, $rootScope, $ionicGesture, socket, $cordovaVibration, focus) {
+.controller('TouchpadCtrl', function($scope, $rootScope, $ionicGesture, socket, focus) {
   ionic.Platform.fullScreen(true, false);
+  var isvisible = true;
   $scope.showKeyboard = function() {
-    var isvisible = true;
     if (isvisible) {
       console.log("Showing keyboard.");
       cordova.plugins.Keyboard.show();
@@ -27,8 +19,8 @@ angular.module('starter.controllers', [])
       console.log("Hiding");
     }
   };
-
   })
+
   .directive('focusOn',
   function() {
    return function(scope, elem, attr) {
@@ -39,6 +31,7 @@ angular.module('starter.controllers', [])
       });
    };
 })
+
 .directive('keypressEvents', [
   '$document',
   'socket',
@@ -46,19 +39,35 @@ angular.module('starter.controllers', [])
     return {
       restrict: 'A',
       link: function() {
+        // this is needed for backspace and maybe others
         $document.bind('keyup', function(e) {
-          var target = $document[0].getElementById('keyboard').value;
-          var keyCd = e.keyCode || e.which;
-          if (keyCd === 229) {
-            keyCd = target.charCodeAt(target.length - 1);
-          }
-          socket.emit('keypress', {key: keyCd});
+          var  key = e.keyCode || e.which;
+          if (key === 8)
+            socket.emit('keypress', {key: key});
+        });
+
+        $document.bind('keypress', function(e) {
+          // var target = $document[0].getElementById('keyboard').value;
+          var  key = e.keyCode || e.which;
+          //modifier keys
+          var space = 32;
+          var backspace = 8;
+          var shift = e.shiftKey;
+          var alt = 18;
+          var ctrl = 17;
+        //  if (keyCd === 229 || keyCd === 0) {
+        //     keyCd = target.charCodeAt(target.length - 1);
+        //    }
+          // console.log("KeyCd is: " + keyCd + " e.keycodeis: " + e.keyCode + " ewhich" + e.which );
+          console.log(key);
+          socket.emit('keypress', {key: key});
         });
       }
     };
   }
 ])
-.directive('detectGestures', function($ionicGesture, socket) {
+
+.directive('detectGestures', function($ionicGesture, socket, $cordovaVibration) {
   return {
     restrict: 'A',
     link: function($scope) {
@@ -67,6 +76,8 @@ angular.module('starter.controllers', [])
               previousY,
               currentx,
               currenty;
+
+
       $ionicGesture.on('dragstart', function(e){
         ionic.Platform.fullScreen(true, false);
         $scope.$apply(function() {
@@ -89,7 +100,6 @@ angular.module('starter.controllers', [])
           socket.emit('dragging', {x: $scope.data.tapX, y: $scope.data.tapY});
         };
 
-
       $ionicGesture.on('dragend', function(e){
         console.log('Dragend');
         $scope.$apply(function() {
@@ -99,7 +109,7 @@ angular.module('starter.controllers', [])
 
       $ionicGesture.on('hold', function(e){
         $scope.$apply(function() {
-          $cordovaVibration.vibrate(100);
+          $cordovaVibration.vibrate(25);
           socket.emit('hold', {});
           console.log('Hold.');
         });
@@ -125,21 +135,6 @@ angular.module('starter.controllers', [])
           console.log('Tapped.');
         });
       }, touchpad);
-
-      $ionicGesture.on('swipeup', function(e){
-        $scope.$apply(function() {
-          socket.emit('swipeup', {});
-          console.log('Swiping up...');
-        });
-      }, touchpad);
-
-      $ionicGesture.on('swipedown', function(e){
-        $scope.$apply(function() {
-          socket.emit('swipedown', {});
-          console.log('Swiping down...');
-        });
-      }, touchpad);
-
     }
   };
 });

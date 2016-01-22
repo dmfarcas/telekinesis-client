@@ -9,9 +9,11 @@
                id="touchpad"
                scroll="false"
                on-drag="dragEvent($event)">
-               <input type="text"
+               <!-- the only way to stop the damn autocorrect is to use a password field... lesson learned. Wow. -->
+               <input type="password"
                        focus-on="focusMe"
                        keypress-events
+                       maxlength="0"
                        id="keyboard">
               </input>
                <p>Tap X : {{data.tapX}}</p>

@@ -4,19 +4,27 @@ angular.module('starter.controllers', [])
   // code goes here
 })
 
+.controller('SettingsCtrl', function($scope) {
+  $scope.settings = "Hello Angular";
+})
+
+
 .controller('TouchpadCtrl', function($scope, $rootScope, $ionicGesture, socket, focus) {
-  ionic.Platform.fullScreen(true, false);
-  var isvisible = true;
+  // ionic.Platform.fullScreen(true, false);
+  $scope.focusManager = { focusInputOnBlur: true};
+
+  var isvisible = false;
   $scope.showKeyboard = function() {
-    if (isvisible) {
+    if (!isvisible) {
       console.log("Showing keyboard.");
-      cordova.plugins.Keyboard.show();
+      // cordova.plugins.Keyboard.show();
       focus('focusMe');
-      isvisible = false;
-    } else {
-      cordova.plugins.Keyboard.close();
       isvisible = true;
-      console.log("Hiding");
+    } else {
+      $scope.focusManager = { focusInputOnBlur: false};
+      cordova.plugins.Keyboard.close();
+      isvisible = false;
+      console.log("Hiding keyboard.");
     }
   };
   })
@@ -30,6 +38,30 @@ angular.module('starter.controllers', [])
         }
       });
    };
+})
+
+.directive("detectFocus", function () {
+        return {
+            restrict: "A",
+            scope: {
+                onFocus: '&onFocus',
+                onBlur: '&onBlur',
+                focusOnBlur: '=focusOnBlur'
+            },
+            link: function (scope, elem) {
+
+                elem.on("focus", function () {
+                    scope.onFocus();
+                    scope.focusOnBlur = true;  //note the reassignment here, reason why I set '=' instead of '@' above.
+                });
+
+                elem.on("blur", function () {
+                    scope.onBlur();
+                    if (scope.focusOnBlur)
+                        elem[0].focus();
+                });
+            }
+        };
 })
 
 .directive('keypressEvents', [
@@ -79,7 +111,7 @@ angular.module('starter.controllers', [])
 
 
       $ionicGesture.on('dragstart', function(e){
-        ionic.Platform.fullScreen(true, false);
+        // ionic.Platform.fullScreen(true, false);
         $scope.$apply(function() {
           previousX = event.gesture.touches[0].screenX;
           previousY = event.gesture.touches[0].screenY;

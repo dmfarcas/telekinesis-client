@@ -4,7 +4,7 @@
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers', 'ngCordova'])
+angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
 .factory('socket', function socket($rootScope) {
   var socket = io.connect("http://192.168.1.3:6910");
   return {
@@ -46,8 +46,11 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ngCordova'])
 
     }
     if (window.StatusBar) {
-      // org.apache.cordova.statusbar required
-      StatusBar.styleDefault();
+      if (ionic.Platform.isAndroid()) {
+        StatusBar.backgroundColorByHexString('#209dc2');
+    } else {
+      StatusBar.styleLightContent();
+    }
     }
   });
 })
@@ -70,7 +73,17 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ngCordova'])
           controller: 'TouchpadCtrl'
         }
       }
-    });
+    })
+
+    .state('app.settings', {
+        url: '/settings',
+        views: {
+          'menuContent': {
+            templateUrl: 'templates/settings.html',
+            controller: 'SettingsCtrl'
+          }
+        }
+      });
 
 
   // if none of the above states are matched, use this as the fallback

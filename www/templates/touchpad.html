@@ -5,11 +5,15 @@
         </button>
       </ion-nav-buttons>
   <ion-content class="padding"
-
+              detect-gestures
                id="touchpad"
                scroll="false"
                on-drag="dragEvent($event)">
-               <input type="text" ng-model="keyboard" focus-on="focusMe" keypress-events> </input>
+               <input type="text"
+                       focus-on="focusMe"
+                       keypress-events
+                       id="keyboard">
+              </input>
                <p>Tap X : {{data.tapX}}</p>
                <p>Tap Y : {{data.tapY}}</p>
                </ion-content>

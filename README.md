@@ -13,3 +13,4 @@
 * Music/video player controls
 * Powerpoint presenter controls etc.
 * Add more shortcuts to keyboard.
+* File manager

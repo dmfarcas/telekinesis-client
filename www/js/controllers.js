@@ -108,7 +108,6 @@ angular.module('starter.controllers', [])
               previousY,
               previousScroll;
 
-
       $ionicGesture.on('dragstart', function(e){
         // ionic.Platform.fullScreen(true, false);
         $scope.$apply(function() {
@@ -157,6 +156,8 @@ angular.module('starter.controllers', [])
       }, touchpad);
 
       $ionicGesture.on('hold', function(e){
+        console.log(event.gesture.touches.length);
+
         $scope.$apply(function() {
           $cordovaVibration.vibrate(25);
           socket.emit('hold', {});
@@ -166,30 +167,46 @@ angular.module('starter.controllers', [])
 
       $ionicGesture.on('touch transformstart', function(e){
         if (e.gesture.touches.length === 2) {
-          previousScroll = event.gesture.touches[0].screenY;
+          previousScroll = Math.trunc(event.gesture.touches[0].screenY);
           console.log($scope.data.dragY1);
+        }
+
+        // because 3 finger swipe is the new 2 finger tap...
+        // yeah I can't get the event right
+        if (e.gesture.touches.length === 3) {
+          $cordovaVibration.vibrate([50, 50]);
+          socket.emit('rightclick');
+          console.log("Right Click");
         }
       }, touchpad);
 
+      var scrollAccum = [];
       $ionicGesture.on('transform', function(e){
         $scope.$apply(function() {
         if (e.gesture.touches.length === 2) {
-          $scope.data.dragY1 = event.gesture.touches[0].screenY - previousScroll;
+          $scope.data.dragY1 = Math.trunc(event.gesture.touches[0].screenY) - previousScroll;
           // should be able to add natural scrolling at some point
           // this scroll is pretty hacky tho.
-          if ($scope.data.dragY1 >= 0) {
-            socket.emit("scrolldown", {});
-            console.log("Scroll down!");
-          } else {
-            socket.emit("scrollup", {});
-            console.log("Scroll up");
-          }
+          // console.log($scope.data.dragY1);
+          scrollAccum.push($scope.data.dragY1);
+          // console.log(scrollAccum);
+          if (scrollAccum[scrollAccum.length-1] !== scrollAccum[scrollAccum.length-2] ) {
+            console.log($scope.data.dragY1);
+            if ($scope.data.dragY1 > 0) {
+              socket.emit("scrolldown", {});
+              // console.log("Scroll down!");
+            } else {
+              socket.emit("scrollup", {});
+              // console.log("Scroll up");
+            }
+        } else { $scope.data.dragY1 = 0; }
         }
       });
       }, touchpad);
 
       $ionicGesture.on('release', function(e){
         $scope.$apply(function() {
+          scrollAccum = [];
           socket.emit('release', {});
           console.log('Release.');
         });

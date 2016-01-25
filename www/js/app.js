@@ -1,12 +1,6 @@
-// Ionic Starter App
-
-// angular.module is a global place for creating, registering and retrieving Angular modules
-// 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
-// the 2nd parameter is an array of 'requires'
-// 'starter.controllers' is found in controllers.js
 angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
 .factory('socket', function socket($rootScope) {
-  var socket = io.connect("http://192.168.1.3:6910");
+  var socket = io.connect("http://192.168.1.2:6910");
   return {
     on: function (eventName, callback) {
       socket.on(eventName, function () {
@@ -35,6 +29,25 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
     });
   };
 })
+
+.factory('notifications', function(socket) {
+    return {
+      listen: function() {
+        notificationListener.listen(function(n){
+          socket.emit('notification', {notification: n});
+          console.log("Sending to server: " + JSON.stringify(n) );
+        }, function(e){
+          console.log("Notification Error " + e);
+        });
+      }
+    };
+  })
+
+  // leaving notifications open in rootscope for now until I figure out how to do it better
+  .run(function($rootScope, notifications) {
+    $rootScope.notifications = notifications;
+    notifications.listen();
+  })
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {

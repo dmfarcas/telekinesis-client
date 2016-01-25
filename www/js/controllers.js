@@ -39,7 +39,8 @@ angular.module('starter.controllers', [])
       });
    };
 })
-
+// a fix for focus that I found on stackoverflow, it doesn't work as well as I want, but does
+// it's job for prototyping the app atm...
 .directive("detectFocus", function () {
         return {
             restrict: "A",

@@ -12,7 +12,6 @@ angular.module('starter.controllers', [])
 .controller('TouchpadCtrl', function($scope, $rootScope, $ionicGesture, socket, focus) {
   // ionic.Platform.fullScreen(true, false);
   $scope.focusManager = { focusInputOnBlur: true};
-
   var isvisible = false;
   $scope.showKeyboard = function() {
     if (!isvisible) {
@@ -107,8 +106,7 @@ angular.module('starter.controllers', [])
       var touchpad = angular.element(document.querySelector('#touchpad'));
       var previousX,
               previousY,
-              currentx,
-              currenty;
+              previousScroll;
 
 
       $ionicGesture.on('dragstart', function(e){
@@ -132,6 +130,24 @@ angular.module('starter.controllers', [])
           console.log("Should be: " + $scope.data.tapY + " " + $scope.data.tapY);
           socket.emit('dragging', {x: $scope.data.tapX, y: $scope.data.tapY});
         };
+        //
+        // $ionicGesture.on('transform', function(e){
+        //   // console.log('multitap' + e.gesture.touches.length);
+        //   $scope.data.dragX1 = event.gesture.touches[0].screenX;
+        //   $scope.data.dragY1 = event.gesture.touches[0].screenY;
+        //   $scope.data.dragX2 = event.gesture.touches[1].screenX;
+        //   $scope.data.dragY2 = event.gesture.touches[1].screenY;
+        //   if (e.gesture.touches.length === 2) {
+        //   // console.log(parseInt($scope.data.dragX1) - parseInt($scope.data.dragX2));
+        //   // console.log(parseInt($scope.data.dragY1) - parseInt($scope.data.dragY2));
+        //   console.log("I CAN MATH WELL:");
+        //   console.log(parseInt($scope.data.dragX1) - parseInt($scope.data.dragY2));
+        //   console.log(parseInt($scope.data.dragX2) - parseInt($scope.data.dragY1));
+        //   }
+        //   $scope.$apply(function() {
+        //     socket.emit('dragend', {});
+        //   });
+        // }, touchpad);
 
       $ionicGesture.on('dragend', function(e){
         console.log('Dragend');
@@ -148,11 +164,28 @@ angular.module('starter.controllers', [])
         });
       }, touchpad);
 
-      $ionicGesture.on('touch', function(e){
+      $ionicGesture.on('touch transformstart', function(e){
+        if (e.gesture.touches.length === 2) {
+          previousScroll = event.gesture.touches[0].screenY;
+          console.log($scope.data.dragY1);
+        }
+      }, touchpad);
+
+      $ionicGesture.on('transform', function(e){
         $scope.$apply(function() {
-          socket.emit('touch', {});
-          console.log('Touch.');
-        });
+        if (e.gesture.touches.length === 2) {
+          $scope.data.dragY1 = event.gesture.touches[0].screenY - previousScroll;
+          // should be able to add natural scrolling at some point
+          // this scroll is pretty hacky tho.
+          if ($scope.data.dragY1 >= 0) {
+            socket.emit("scrolldown", {});
+            console.log("Scroll down!");
+          } else {
+            socket.emit("scrollup", {});
+            console.log("Scroll up");
+          }
+        }
+      });
       }, touchpad);
 
       $ionicGesture.on('release', function(e){

@@ -32,6 +32,10 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
 
 .factory('notifications', function(socket) {
     return {
+      ready: function() {
+        document.addEventListener('deviceready', this.listen, false);
+        console.log("Device ready.");
+      },
       listen: function() {
         notificationListener.listen(function(n){
           socket.emit('notification', {notification: n});
@@ -46,7 +50,7 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
   // leaving notifications open in rootscope for now until I figure out how to do it better
   .run(function($rootScope, notifications) {
     $rootScope.notifications = notifications;
-    notifications.listen();
+    notifications.ready();
   })
 
 .run(function($ionicPlatform) {

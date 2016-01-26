@@ -8,10 +8,11 @@ angular.module('starter.controllers', [])
   $scope.settings = "Hello Angular";
 })
 
-
 .controller('TouchpadCtrl', function($scope, $rootScope, $ionicGesture, socket, focus) {
   // ionic.Platform.fullScreen(true, false);
-  $scope.focusManager = { focusInputOnBlur: true};
+  $scope.focusManager = {
+    focusInputOnBlur: true
+  };
   var isvisible = false;
   $scope.showKeyboard = function() {
     if (!isvisible) {
@@ -20,49 +21,51 @@ angular.module('starter.controllers', [])
       focus('focusMe');
       isvisible = true;
     } else {
-      $scope.focusManager = { focusInputOnBlur: false};
+      $scope.focusManager = {
+        focusInputOnBlur: false
+      };
       cordova.plugins.Keyboard.close();
       isvisible = false;
       console.log("Hiding keyboard.");
     }
   };
+})
+
+.directive('focusOn',
+    function() {
+      return function(scope, elem, attr) {
+        scope.$on('focusOn', function(e, name) {
+          if (name === attr.focusOn) {
+            elem[0].focus();
+          }
+        });
+      };
+    })
+  // a fix for focus that I found on stackoverflow, it doesn't work as well as I want, but does
+  // it's job for prototyping the app atm...
+  .directive("detectFocus", function() {
+    return {
+      restrict: "A",
+      scope: {
+        onFocus: '&onFocus',
+        onBlur: '&onBlur',
+        focusOnBlur: '=focusOnBlur'
+      },
+      link: function(scope, elem) {
+
+        elem.on("focus", function() {
+          scope.onFocus();
+          scope.focusOnBlur = true; //note the reassignment here, reason why I set '=' instead of '@' above.
+        });
+
+        elem.on("blur", function() {
+          scope.onBlur();
+          if (scope.focusOnBlur)
+            elem[0].focus();
+        });
+      }
+    };
   })
-
-  .directive('focusOn',
-  function() {
-   return function(scope, elem, attr) {
-      scope.$on('focusOn', function(e, name) {
-        if(name === attr.focusOn) {
-          elem[0].focus();
-        }
-      });
-   };
-})
-// a fix for focus that I found on stackoverflow, it doesn't work as well as I want, but does
-// it's job for prototyping the app atm...
-.directive("detectFocus", function () {
-        return {
-            restrict: "A",
-            scope: {
-                onFocus: '&onFocus',
-                onBlur: '&onBlur',
-                focusOnBlur: '=focusOnBlur'
-            },
-            link: function (scope, elem) {
-
-                elem.on("focus", function () {
-                    scope.onFocus();
-                    scope.focusOnBlur = true;  //note the reassignment here, reason why I set '=' instead of '@' above.
-                });
-
-                elem.on("blur", function () {
-                    scope.onBlur();
-                    if (scope.focusOnBlur)
-                        elem[0].focus();
-                });
-            }
-        };
-})
 
 .directive('keypressEvents', [
   '$document',
@@ -73,42 +76,48 @@ angular.module('starter.controllers', [])
       link: function() {
         // this is needed for backspace and maybe others
         $document.bind('keyup', function(e) {
-          var  key = e.keyCode || e.which;
+          var key = e.keyCode || e.which;
           if (key === 8)
-            socket.emit('keypress', {key: key});
+            socket.emit('keypress', {
+              key: key
+            });
         });
 
         $document.bind('keypress', function(e) {
           // var target = $document[0].getElementById('keyboard').value;
-          var  key = e.keyCode || e.which;
+          var key = e.keyCode || e.which;
           //modifier keys
           var space = 32;
           var backspace = 8;
           var shift = e.shiftKey;
           var alt = 18;
           var ctrl = 17;
-        //  if (keyCd === 229 || keyCd === 0) {
-        //     keyCd = target.charCodeAt(target.length - 1);
-        //    }
+          //  if (keyCd === 229 || keyCd === 0) {
+          //     keyCd = target.charCodeAt(target.length - 1);
+          //    }
           // console.log("KeyCd is: " + keyCd + " e.keycodeis: " + e.keyCode + " ewhich" + e.which );
           console.log(key);
-          socket.emit('keypress', {key: key});
+          socket.emit('keypress', {
+            key: key
+          });
         });
       }
     };
   }
 ])
 
-.directive('detectGestures', function($ionicGesture, socket, $cordovaVibration) {
+.directive('detectGestures', function($ionicGesture, socket, $cordovaVibration, $timeout) {
   return {
     restrict: 'A',
     link: function($scope) {
       var touchpad = angular.element(document.querySelector('#touchpad'));
       var previousX,
-              previousY,
-              previousScroll;
+        previousY,
+        previousScroll;
+      var scrollAccum = [];
 
-      $ionicGesture.on('dragstart', function(e){
+
+      $ionicGesture.on('dragstart', function(e) {
         // ionic.Platform.fullScreen(true, false);
         $scope.$apply(function() {
           previousX = event.gesture.touches[0].screenX;
@@ -119,43 +128,29 @@ angular.module('starter.controllers', [])
       }, touchpad);
 
       $scope.data = {
-         tapX : "",
-         tapY : ""
-       };
+        tapX: "",
+        tapY: ""
+      };
 
       $scope.dragEvent = function(event) {
-          $scope.data.tapX = event.gesture.touches[0].screenX - previousX;
-          $scope.data.tapY = event.gesture.touches[0].screenY - previousY;
-          console.log("Should be: " + $scope.data.tapY + " " + $scope.data.tapY);
-          socket.emit('dragging', {x: $scope.data.tapX, y: $scope.data.tapY});
-        };
-        //
-        // $ionicGesture.on('transform', function(e){
-        //   // console.log('multitap' + e.gesture.touches.length);
-        //   $scope.data.dragX1 = event.gesture.touches[0].screenX;
-        //   $scope.data.dragY1 = event.gesture.touches[0].screenY;
-        //   $scope.data.dragX2 = event.gesture.touches[1].screenX;
-        //   $scope.data.dragY2 = event.gesture.touches[1].screenY;
-        //   if (e.gesture.touches.length === 2) {
-        //   // console.log(parseInt($scope.data.dragX1) - parseInt($scope.data.dragX2));
-        //   // console.log(parseInt($scope.data.dragY1) - parseInt($scope.data.dragY2));
-        //   console.log("I CAN MATH WELL:");
-        //   console.log(parseInt($scope.data.dragX1) - parseInt($scope.data.dragY2));
-        //   console.log(parseInt($scope.data.dragX2) - parseInt($scope.data.dragY1));
-        //   }
-        //   $scope.$apply(function() {
-        //     socket.emit('dragend', {});
-        //   });
-        // }, touchpad);
+        $scope.data.tapX = event.gesture.touches[0].screenX - previousX;
+        $scope.data.tapY = event.gesture.touches[0].screenY - previousY;
+        console.log("Should be: " + $scope.data.tapY + " " + $scope.data.tapY);
+        socket.emit('dragging', {
+          x: $scope.data.tapX,
+          y: $scope.data.tapY
+        });
+      };
 
-      $ionicGesture.on('dragend', function(e){
+      $ionicGesture.on('dragend', function(e) {
         console.log('Dragend');
         $scope.$apply(function() {
           socket.emit('dragend', {});
         });
       }, touchpad);
 
-      $ionicGesture.on('hold', function(e){
+
+      $ionicGesture.on('hold', function(e) {
         console.log(event.gesture.touches.length);
 
         $scope.$apply(function() {
@@ -165,54 +160,57 @@ angular.module('starter.controllers', [])
         });
       }, touchpad);
 
-      $ionicGesture.on('touch transformstart', function(e){
+      $ionicGesture.on('touch transformstart', function(e) {
         if (e.gesture.touches.length === 2) {
           previousScroll = Math.trunc(event.gesture.touches[0].screenY);
           console.log($scope.data.dragY1);
         }
-
-        // because 3 finger swipe is the new 2 finger tap...
-        // yeah I can't get the event right
-        if (e.gesture.touches.length === 3) {
-          $cordovaVibration.vibrate([50, 50]);
-          socket.emit('rightclick');
-          console.log("Right Click");
-        }
       }, touchpad);
 
-      var scrollAccum = [];
-      $ionicGesture.on('transform', function(e){
+      $ionicGesture.on('transform drag', function(e) {
         $scope.$apply(function() {
-        if (e.gesture.touches.length === 2) {
-          $scope.data.dragY1 = Math.trunc(event.gesture.touches[0].screenY) - previousScroll;
-          // should be able to add natural scrolling at some point
-          // this scroll is pretty hacky tho.
-          // console.log($scope.data.dragY1);
-          scrollAccum.push($scope.data.dragY1);
-          // console.log(scrollAccum);
-          if (scrollAccum[scrollAccum.length-1] !== scrollAccum[scrollAccum.length-2] ) {
+          if (e.gesture.touches.length === 2) {
+            $timeout.cancel(promise);
+            console.log(e.gesture.changedTouches);
+            $scope.data.dragY1 = Math.trunc(event.gesture.touches[0].screenY) - previousScroll;
+            // should be able to add natural scrolling at some point
+            // this scroll is pretty hacky tho.
             console.log($scope.data.dragY1);
-            if ($scope.data.dragY1 > 0) {
-              socket.emit("scrolldown", {});
-              // console.log("Scroll down!");
-            } else {
+            scrollAccum.push($scope.data.dragY1);
+            // console.log(scrollAccum);
+            if (scrollAccum[scrollAccum.length - 2] > scrollAccum[scrollAccum.length - 1])
               socket.emit("scrollup", {});
-              // console.log("Scroll up");
-            }
-        } else { $scope.data.dragY1 = 0; }
-        }
-      });
+            if (scrollAccum[scrollAccum.length - 2] < scrollAccum[scrollAccum.length - 1])
+              socket.emit("scrolldown", {});
+            if (scrollAccum[scrollAccum.length - 1] !== scrollAccum[scrollAccum.length - 2]) {}
+          }
+        });
       }, touchpad);
 
-      $ionicGesture.on('release', function(e){
+      $ionicGesture.on('release', function(e) {
         $scope.$apply(function() {
           scrollAccum = [];
           socket.emit('release', {});
+          $timeout.cancel(promise);
           console.log('Release.');
         });
       }, touchpad);
 
-      $ionicGesture.on('tap', function(e){
+      var promise;
+      $ionicGesture.on('touchstart', function(e) {
+        $scope.$apply(function() {
+          if (e.touches.length === 2) {
+            promise = $timeout(function() {
+              $cordovaVibration.vibrate([50, 50]);
+              socket.emit('rightclick');
+              console.log("Right Click");
+            }, 200);
+          }
+          console.log(e.touches.length);
+        });
+      }, touchpad);
+
+      $ionicGesture.on('tap', function(e) {
         $scope.$apply(function() {
           socket.emit('tap', {});
           console.log('Tapped.');

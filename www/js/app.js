@@ -47,11 +47,37 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
     };
   })
 
+  .factory('getcontacts', function($cordovaContacts, socket) {
+    return {
+      ready: function() {
+        document.addEventListener('deviceready', this.get, false);
+      },
+      send: function() {
+        console.log("Sending contacts to server...");
+      },
+      get: function() {
+          $cordovaContacts.find({filter: ''}).then(function(result) {
+          console.log("Sending contacts?");
+          socket.emit('contacts', {contact: result});
+      }, function(error) {
+          console.log("ERROR: " + error);
+      });
+      }
+    };
+  })
+
+
+  //startup stuff
   // leaving notifications open in rootscope for now until I figure out how to do it better
-  .run(function($rootScope, notifications) {
+  .run(function($rootScope, notifications, getcontacts) {
     $rootScope.notifications = notifications;
     notifications.ready();
+    $rootScope.getcontacts = getcontacts;
+    getcontacts.ready();
   })
+
+
+
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {

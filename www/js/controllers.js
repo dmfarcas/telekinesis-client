@@ -97,9 +97,7 @@ angular.module('starter.controllers', [])
           //    }
           // console.log("KeyCd is: " + keyCd + " e.keycodeis: " + e.keyCode + " ewhich" + e.which );
           console.log(key);
-          socket.emit('keypress', {
-            key: key
-          });
+          socket.emit('keypress', { key: key });
         });
       }
     };
@@ -150,7 +148,7 @@ angular.module('starter.controllers', [])
       }, touchpad);
 
 
-      $ionicGesture.on('hold', function(e) {
+      $ionicGesture.on('hold', function(e){
         console.log(event.gesture.touches.length);
 
         $scope.$apply(function() {
@@ -179,10 +177,11 @@ angular.module('starter.controllers', [])
             scrollAccum.push($scope.data.dragY1);
             // console.log(scrollAccum);
             if (scrollAccum[scrollAccum.length - 2] > scrollAccum[scrollAccum.length - 1])
-              socket.emit("scrollup", {});
+            socket.emit("scrollup", {});
             if (scrollAccum[scrollAccum.length - 2] < scrollAccum[scrollAccum.length - 1])
               socket.emit("scrolldown", {});
-            if (scrollAccum[scrollAccum.length - 1] !== scrollAccum[scrollAccum.length - 2]) {}
+            if (scrollAccum[scrollAccum.length - 1] !== scrollAccum[scrollAccum.length - 2]) {
+            }
           }
         });
       }, touchpad);

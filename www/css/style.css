@@ -13,6 +13,6 @@ html, body {
   height: 100%;
   background: white;
 }
-.ion-compose {
+.ion-compose, .ion-ios-information-outline {
   font-size: 30px;
 }

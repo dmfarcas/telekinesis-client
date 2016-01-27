@@ -52,6 +52,9 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
   };
 })
 
+
+
+
 .factory('getcontacts', function($cordovaContacts, socket) {
   return {
     ready: function() {

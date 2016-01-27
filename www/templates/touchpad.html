@@ -1,5 +1,8 @@
 <ion-view view-title="Touchpad">
   <ion-nav-buttons side="primary">
+    <button class="button" ng-click="showInfo()">
+      <i class="ion-ios-information-outline"></i>
+    </button>
     <button class="button" ng-click="showKeyboard()">
       <i class="ion-compose"></i>
     </button>
@@ -9,8 +12,5 @@
     <!-- the only way to stop the damn autocorrect is to use a password field... lesson learned. Wow. -->
     <input type="password" focus-on="focusMe" detect-focus keypress-events maxlength="0" focus-on-blur="focusManager.focusInputOnBlur" id="keyboard">
     </input>
-    <p>Tap X : {{data.tapX}}</p>
-    <p>Tap Y : {{data.tapY}}</p>
-
   </ion-content>
 </ion-view>

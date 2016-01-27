@@ -1,7 +1,17 @@
 <ion-view view-title="Settings">
   <ion-content>
-    <h1>Settings</h1>
-    <p>This is a settings page placeholder!</p>
-    <p>{{settings}}
+    <h3>Touchpad settings</h3>
+    <ul class="list">
+    <li class="item item-toggle">
+       Keep device awake while using touchpad
+       <label class="toggle toggle-positive">
+         <input type="checkbox" ng-model="data.katoggle" ng-change="awakeSet()" id="keepAwake" name="keepAwake">
+         <div class="track">
+           <div class="handle"></div>
+         </div>
+       </label>
+    </li>
+  </ul>
+  {{deviceAwake}}
   </ion-content>
 </ion-view>

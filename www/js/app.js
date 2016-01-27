@@ -1,80 +1,89 @@
 angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
-.factory('socket', function socket($rootScope) {
-  var socket = io.connect("http://192.168.1.2:6910");
-  return {
-    on: function (eventName, callback) {
-      socket.on(eventName, function () {
-        var args = arguments;
-        $rootScope.$apply(function () {
-          callback.apply(socket, args);
-        });
-      });
-    },
-    emit: function (eventName, data, callback) {
-      socket.emit(eventName, data, function () {
-        var args = arguments;
-        $rootScope.$apply(function () {
-          if (callback) {
+
+  //thanks for the factory random dude on stackoverflow...
+  .factory('socket', function connectSocket($rootScope) {
+    var socket = io.connect("http://192.168.1.2:6910");
+    return {
+      on: function(eventName, callback) {
+        socket.on(eventName, function() {
+          var args = arguments;
+          $rootScope.$apply(function() {
             callback.apply(socket, args);
-          }
+          });
         });
-      });
-    }
-  };
-})
-.factory('focus', function ($rootScope, $timeout) {
+      },
+      emit: function(eventName, data, callback) {
+        socket.emit(eventName, data, function() {
+          var args = arguments;
+          $rootScope.$apply(function() {
+            if (callback) {
+              callback.apply(socket, args);
+            }
+          });
+        });
+      }
+    };
+  })
+
+.factory('focus', function($rootScope, $timeout) {
   return function(name) {
-    $timeout(function (){
+    $timeout(function() {
       $rootScope.$broadcast('focusOn', name);
     });
   };
 })
 
 .factory('notifications', function(socket) {
-    return {
-      ready: function() {
-        document.addEventListener('deviceready', this.listen, false);
-        console.log("Device ready.");
-      },
-      listen: function() {
-        notificationListener.listen(function(n){
-          socket.emit('notification', {notification: n});
-          console.log("Sending to server: " + JSON.stringify(n) );
-        }, function(e){
-          console.log("Notification Error " + e);
+  return {
+    ready: function() {
+      document.addEventListener('deviceready', this.listen, false);
+      console.log("Device ready.");
+    },
+    listen: function() {
+      notificationListener.listen(function(n) {
+        socket.emit('notification', {
+          notification: n
         });
-      }
-    };
-  })
-
-  .factory('getcontacts', function($cordovaContacts, socket) {
-    return {
-      ready: function() {
-        document.addEventListener('deviceready', this.get, false);
-      },
-      send: function() {
-        console.log("Sending contacts to server...");
-      },
-      get: function() {
-          $cordovaContacts.find({filter: ''}).then(function(result) {
-          console.log("Sending contacts?");
-          socket.emit('contacts', {contact: result});
-      }, function(error) {
-          console.log("ERROR: " + error);
+        console.log("Sending to server: " + JSON.stringify(n));
+      }, function(e) {
+        console.log("Notification Error " + e);
       });
-      }
-    };
-  })
+    }
+  };
+})
+
+.factory('getcontacts', function($cordovaContacts, socket) {
+  return {
+    ready: function() {
+      document.addEventListener('deviceready', this.get, false);
+    },
+    send: function() {
+      console.log("Sending contacts to server...");
+    },
+    get: function() {
+      $cordovaContacts.find({
+        filter: ''
+      }).then(function(result) {
+        console.log("Sending contacts?");
+        socket.emit('contacts', {
+          contact: result
+        });
+      }, function(error) {
+        console.log("ERROR: " + error);
+      });
+    }
+  };
+})
 
 
-  //startup stuff
-  // leaving notifications open in rootscope for now until I figure out how to do it better
-  .run(function($rootScope, notifications, getcontacts) {
-    $rootScope.notifications = notifications;
-    notifications.ready();
-    $rootScope.getcontacts = getcontacts;
-    getcontacts.ready();
-  })
+//startup stuff
+// leaving notifications open in rootscope for now until I figure out how to do it better
+.run(function($rootScope, notifications, getcontacts) {
+  $rootScope.notifications = notifications;
+  notifications.ready();
+  $rootScope.getcontacts = getcontacts;
+  getcontacts.ready();
+})
 
 
 
@@ -91,9 +100,9 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
     if (window.StatusBar) {
       if (ionic.Platform.isAndroid()) {
         StatusBar.backgroundColorByHexString('#209dc2');
-    } else {
-      StatusBar.styleLightContent();
-    }
+      } else {
+        StatusBar.styleLightContent();
+      }
     }
   });
 })
@@ -109,24 +118,24 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
   })
 
   .state('app.touchpad', {
-      url: '/touchpad',
-      views: {
-        'menuContent': {
-          templateUrl: 'templates/touchpad.html',
-          controller: 'TouchpadCtrl'
-        }
+    url: '/touchpad',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/touchpad.html',
+        controller: 'TouchpadCtrl'
       }
-    })
+    }
+  })
 
-    .state('app.settings', {
-        url: '/settings',
-        views: {
-          'menuContent': {
-            templateUrl: 'templates/settings.html',
-            controller: 'SettingsCtrl'
-          }
-        }
-      });
+  .state('app.settings', {
+    url: '/settings',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/settings.html',
+        controller: 'SettingsCtrl'
+      }
+    }
+  });
 
 
   // if none of the above states are matched, use this as the fallback

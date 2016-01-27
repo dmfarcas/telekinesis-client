@@ -4,11 +4,28 @@ angular.module('starter.controllers', [])
   // code goes here
 })
 
-.controller('SettingsCtrl', function($scope) {
-  $scope.settings = "Hello Angular";
+.controller('SettingsCtrl', function($scope, $window) {
+  $scope.data = {};
+  // prevent keeping device awake in this view
+  $scope.$on('$ionicView.enter', function() {
+  if ($window.localStorage.getItem('keepAwake') === 'true')
+    $window.plugins.insomnia.allowSleepAgain();
+  });
+  //Settings for keeping the device awake
+  $scope.data.katoggle = $window.localStorage.getItem('keepAwake') === "true";
+  $scope.awakeSet = function() {
+    $window.localStorage.setItem('keepAwake', $scope.data.katoggle);
+  };
 })
 
-.controller('TouchpadCtrl', function($scope, $rootScope, $ionicGesture, socket, focus) {
+.controller('TouchpadCtrl', function($scope, $rootScope, $ionicGesture, $window, socket, focus) {
+  $scope.$on('$ionicView.enter', function() {
+    if ($window.localStorage.getItem('keepAwake') === 'true') {
+      $window.plugins.insomnia.keepAwake();
+    } else {
+      $window.plugins.insomnia.allowSleepAgain();
+    }
+    });
   // ionic.Platform.fullScreen(true, false);
   $scope.focusManager = {
     focusInputOnBlur: true
@@ -74,30 +91,21 @@ angular.module('starter.controllers', [])
     return {
       restrict: 'A',
       link: function() {
-        // this is needed for backspace and maybe others
+        // this is needed for backspace and shift, ctrl, meta etc.
+        // I think these will be triggered by onscreen elements though.
         $document.bind('keyup', function(e) {
           var key = e.keyCode || e.which;
-          if (key === 8)
+          if (key === 8) //backspace
             socket.emit('keypress', {
-              key: key
-            });
+            key: key
+          });
         });
 
         $document.bind('keypress', function(e) {
-          // var target = $document[0].getElementById('keyboard').value;
           var key = e.keyCode || e.which;
-          //modifier keys
-          var space = 32;
-          var backspace = 8;
-          var shift = e.shiftKey;
-          var alt = 18;
-          var ctrl = 17;
-          //  if (keyCd === 229 || keyCd === 0) {
-          //     keyCd = target.charCodeAt(target.length - 1);
-          //    }
-          // console.log("KeyCd is: " + keyCd + " e.keycodeis: " + e.keyCode + " ewhich" + e.which );
-          console.log(key);
-          socket.emit('keypress', { key: key });
+          socket.emit('keypress', {
+            key: key
+          });
         });
       }
     };
@@ -113,11 +121,17 @@ angular.module('starter.controllers', [])
         previousY,
         previousScroll;
       var scrollAccum = [];
+      var righttaptimeout;
 
+      $scope.data = {
+        tapX: "",
+        tapY: ""
+      };
 
       $ionicGesture.on('dragstart', function(e) {
         // ionic.Platform.fullScreen(true, false);
         $scope.$apply(function() {
+          // these values are needed to get a 0 start point on every dragstart
           previousX = event.gesture.touches[0].screenX;
           previousY = event.gesture.touches[0].screenY;
           socket.emit('dragstart', {});
@@ -125,11 +139,7 @@ angular.module('starter.controllers', [])
         });
       }, touchpad);
 
-      $scope.data = {
-        tapX: "",
-        tapY: ""
-      };
-
+      // I think this could be done with a $ionicGesture event, just for consistence
       $scope.dragEvent = function(event) {
         $scope.data.tapX = event.gesture.touches[0].screenX - previousX;
         $scope.data.tapY = event.gesture.touches[0].screenY - previousY;
@@ -148,7 +158,7 @@ angular.module('starter.controllers', [])
       }, touchpad);
 
 
-      $ionicGesture.on('hold', function(e){
+      $ionicGesture.on('hold', function(e) {
         console.log(event.gesture.touches.length);
 
         $scope.$apply(function() {
@@ -160,46 +170,51 @@ angular.module('starter.controllers', [])
 
       $ionicGesture.on('touch transformstart', function(e) {
         if (e.gesture.touches.length === 2) {
+          // get previous scroll, so scrolling always starts at 0
           previousScroll = Math.trunc(event.gesture.touches[0].screenY);
           console.log($scope.data.dragY1);
         }
       }, touchpad);
 
+      // scrolling function
       $ionicGesture.on('transform drag', function(e) {
         $scope.$apply(function() {
           if (e.gesture.touches.length === 2) {
-            $timeout.cancel(promise);
-            console.log(e.gesture.changedTouches);
+            // the timeout is here to cancel the other 2 finger gesture, right click.
+            $timeout.cancel(righttaptimeout);
+            // console.log(e.gesture.changedTouches);
             $scope.data.dragY1 = Math.trunc(event.gesture.touches[0].screenY) - previousScroll;
-            // should be able to add natural scrolling at some point
-            // this scroll is pretty hacky tho.
-            console.log($scope.data.dragY1);
+            // console.log($scope.data.dragY1);
             scrollAccum.push($scope.data.dragY1);
             // console.log(scrollAccum);
             if (scrollAccum[scrollAccum.length - 2] > scrollAccum[scrollAccum.length - 1])
-            socket.emit("scrollup", {});
+              socket.emit("scrollup", {});
             if (scrollAccum[scrollAccum.length - 2] < scrollAccum[scrollAccum.length - 1])
               socket.emit("scrolldown", {});
-            if (scrollAccum[scrollAccum.length - 1] !== scrollAccum[scrollAccum.length - 2]) {
-            }
+            if (scrollAccum[scrollAccum.length - 1] !== scrollAccum[scrollAccum.length - 2]) {}
           }
         });
       }, touchpad);
 
+
       $ionicGesture.on('release', function(e) {
         $scope.$apply(function() {
+          // cleaning accumulated scroll array
           scrollAccum = [];
+          //cancel the potential right click event
+          $timeout.cancel(righttaptimeout);
           socket.emit('release', {});
-          $timeout.cancel(promise);
           console.log('Release.');
         });
       }, touchpad);
 
-      var promise;
+
+      //right click event, it'll wait 200ms before triggering so it doesn't overlap with
+      //the scroll function
       $ionicGesture.on('touchstart', function(e) {
         $scope.$apply(function() {
           if (e.touches.length === 2) {
-            promise = $timeout(function() {
+            righttaptimeout = $timeout(function() {
               $cordovaVibration.vibrate([50, 50]);
               socket.emit('rightclick');
               console.log("Right Click");

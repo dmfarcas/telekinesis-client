@@ -16,3 +16,4 @@
 * Add more shortcuts to keyboard.
 * File manager
 * Better logging... winston?
+* Rough clipboard sync could be done, user would have to specifically ask for clipboard copy, though.

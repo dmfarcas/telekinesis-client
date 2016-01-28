@@ -1,4 +1,5 @@
 # telekinesis-client
+> Client application for Telekinesis, a desktop companion for your phone. Long story short, it sends notifications/messages and allows you to control the computer via your phone. Written in Ionic.
 
 
 ## TODO

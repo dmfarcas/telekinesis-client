@@ -1,6 +1,6 @@
 angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
 
-  //thanks for the factory random dude on stackoverflow...
+  //http://stackoverflow.com/questions/14389049/improve-this-angularjs-factory-to-use-with-socket-io
   .factory('socket', function connectSocket($rootScope) {
     var socket = io.connect("http://192.168.1.2:6910");
     return {
@@ -58,18 +58,21 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
 .factory('getcontacts', function($cordovaContacts, socket) {
   return {
     ready: function() {
-      document.addEventListener('deviceready', this.get, false);
+      document.addEventListener('deviceready', this.send, false);
     },
     send: function() {
-      console.log("Sending contacts to server...");
-    },
-    get: function() {
+      var sendpack = [];
       $cordovaContacts.find({
-        filter: ''
+        filter: '',
       }).then(function(result) {
-        console.log("Sending contacts?");
+        console.log("Sending contacts");
+        result.map(function(res) {
+          if(res.phoneNumbers) {
+            sendpack.push(res);
+          }
+        });
         socket.emit('contacts', {
-          contact: result
+          contact: sendpack
         });
       }, function(error) {
         console.log("ERROR: " + error);

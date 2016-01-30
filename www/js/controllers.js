@@ -4,18 +4,30 @@ angular.module('starter.controllers', [])
   // code goes here
 })
 
-.controller('SettingsCtrl', function($scope, $window) {
+.controller('SettingsCtrl', function($scope, $window, socket) {
   $scope.data = {};
   // prevent keeping device awake in this view
   $scope.$on('$ionicView.enter', function() {
   if ($window.localStorage.getItem('keepAwake') === 'true')
     $window.plugins.insomnia.allowSleepAgain();
   });
+
   //Settings for keeping the device awake
   $scope.data.katoggle = $window.localStorage.getItem('keepAwake') === "true";
   $scope.awakeSet = function() {
     $window.localStorage.setItem('keepAwake', $scope.data.katoggle);
   };
+
+  //Settings for keeping PC awake
+  $scope.data.katogglepc = $window.localStorage.getItem('keepPcAwake') === "true";
+  $scope.awakeSetPc = function() {
+    socket.emit('psleep', {
+      keep: $scope.data.katogglepc
+    });
+    $window.localStorage.setItem('awakeSetPc', $scope.data.katogglepc);
+  };
+
+
 })
 
 .controller('TouchpadCtrl', function($scope, $rootScope, $ionicGesture, $window, socket, focus) {

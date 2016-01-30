@@ -11,6 +11,16 @@
        </label>
     </li>
     <li class="item item-toggle">
+      Prevent computer from going to sleep
+       <label class="toggle toggle-positive">
+         <input type="checkbox"  ng-model="data.katogglepc" ng-change="awakeSetPc()" id="keepPcAwake" name="keepPcAwake">
+         <div class="track">
+           <div class="handle"></div>
+         </div>
+       </label>
+    </li>
+    <!-- TODO -->
+    <li class="item item-toggle">
         Send notifications to server
        <label class="toggle toggle-positive">
          <input type="checkbox">
@@ -19,6 +29,7 @@
          </div>
        </label>
     </li>
+    <!-- TODO -->
     <li class="item item-toggle">
        Synchronize contacts on startup
        <label class="toggle toggle-positive">

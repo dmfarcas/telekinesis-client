@@ -92,7 +92,33 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
 })
 
 
+// SMS Function
+.run(function($ionicPlatform) {
+  $ionicPlatform.ready(function() {
+      var filter = {
+              box : 'inbox', //inbox, sent, draft
+              //following 4 filters should not be applied together, they are OR relationship
+              read :0, //0 for unread and 1 for already
+              // _id: 1234, //specify the msg id
+            //   body : 'This is a test SMS' , //content to match
+              indexFrom : 0,
+              maxCount : 10,
 
+            };
+            if(SMS) SMS.listSMS(filter,function(data){
+              if(Array.isArray(data)){
+                for (var i = 1; i<=data.length; i++) {
+                    console.log(data[i].body);
+                }
+            }
+          }, function(err) {
+            var alertPopup = $ionicPopup.alert({
+              title: 'Reading Failed!',
+              template: 'Read Failed'
+            });
+        });
+        });
+  })
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {

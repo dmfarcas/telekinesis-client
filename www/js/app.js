@@ -1,5 +1,4 @@
 angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
-
   //http://stackoverflow.com/questions/14389049/improve-this-angularjs-factory-to-use-with-socket-io
   .factory('socket', function connectSocket($rootScope) {
     var socket = io.connect("http://192.168.1.2:6910");
@@ -61,62 +60,71 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
       document.addEventListener('deviceready', this.send, false);
     },
     send: function() {
-      var sendpack = [];
-      $cordovaContacts.find({
-        filter: '',
-      }).then(function(result) {
-        console.log("Sending contacts");
-        result.map(function(res) {
-          if(res.phoneNumbers) {
-            sendpack.push(res);
-          }
-        });
-        socket.emit('contacts', {
-          contact: sendpack
-        });
-      }, function(error) {
-        console.log("ERROR: " + error);
+        var sendpack = [];
+
+        socket.on('connection', function() {
+      io.on('reinitializecontacts', function () {
+          $cordovaContacts.find({
+            filter: '',
+          }).then(function(result) {
+            console.log("Sending contacts");
+            result.map(function(res) {
+              if(res.phoneNumbers) {
+                sendpack.push(res);
+              }
+            });
+            socket.emit('contacts', {
+              contact: sendpack
+            });
+          }, function(error) {
+            console.log("ERROR: " + error);
+          });
       });
-    }
+  });
+        }
   };
 })
 
 
 //startup stuff
 // leaving notifications open in rootscope for now until I figure out how to do it better
-.run(function($rootScope, notifications, getcontacts) {
+.run(function($rootScope, notifications, getcontacts, socket) {
   $rootScope.notifications = notifications;
   notifications.ready();
   $rootScope.getcontacts = getcontacts;
   getcontacts.ready();
+    //   console.log("Resending contacts.");
+    //  getcontacts.send();
+
 })
 
 
 // SMS Function
-.run(function($ionicPlatform) {
+.run(function($ionicPlatform, socket) {
   $ionicPlatform.ready(function() {
+         //Start watching SMS
+
       var filter = {
-              box : 'inbox', //inbox, sent, draft
+              box : 'sent', //inbox, sent, draft
               //following 4 filters should not be applied together, they are OR relationship
-              read :0, //0 for unread and 1 for already
+              read :1, //0 for unread and 1 for already
               // _id: 1234, //specify the msg id
-            //   body : 'This is a test SMS' , //content to match
-              indexFrom : 0,
-              maxCount : 10,
+            //   body : '' , //content to match
+            //   indexFrom : 0,
+            // address: '0745319600',
+              maxCount : 100,
 
             };
-            if(SMS) SMS.listSMS(filter,function(data){
-              if(Array.isArray(data)){
-                for (var i = 1; i<=data.length; i++) {
-                    console.log(data[i].body);
-                }
-            }
-          }, function(err) {
-            var alertPopup = $ionicPopup.alert({
-              title: 'Reading Failed!',
-              template: 'Read Failed'
-            });
+            if(SMS) {
+                SMS.listSMS(filter, function(data){
+                    console.log("Sending messages list to server.");
+                socket.emit('messages', {
+                  messages: data
+                });
+            }, function(err) {
+                console.log("Cannot send messages: " + err);
         });
+        }
         });
   })
 

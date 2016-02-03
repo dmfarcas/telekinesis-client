@@ -61,9 +61,7 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
     },
     send: function() {
         var sendpack = [];
-
-        socket.on('connection', function() {
-      io.on('reinitializecontacts', function () {
+        socket.on('reinitializecontacts', function () {
           $cordovaContacts.find({
             filter: '',
           }).then(function(result) {
@@ -80,7 +78,6 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
             console.log("ERROR: " + error);
           });
       });
-  });
         }
   };
 })

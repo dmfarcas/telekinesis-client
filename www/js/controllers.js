@@ -155,7 +155,7 @@ angular.module('starter.controllers', [])
       $scope.dragEvent = function(event) {
         $scope.data.tapX = event.gesture.touches[0].screenX - previousX;
         $scope.data.tapY = event.gesture.touches[0].screenY - previousY;
-        console.log("Should be: " + $scope.data.tapY + " " + $scope.data.tapY);
+        console.log("Sending mouse coordinates: " + $scope.data.tapY + " " + $scope.data.tapY);
         socket.emit('dragging', {
           x: $scope.data.tapX,
           y: $scope.data.tapY

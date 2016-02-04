@@ -54,42 +54,50 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
 
 
 
-.factory('getcontacts', function($cordovaContacts, socket) {
-  return {
-    ready: function() {
-      document.addEventListener('deviceready', this.send, false);
-    },
-    send: function() {
+// .factory('getcontacts', function($cordovaContacts, socket) {
+//   return {
+//     ready: function() {
+//       document.addEventListener('deviceready', this.send, false);
+//     },
+//     send: function() {
+//
+//   };
+// })
+
+
+.run(function($cordovaContacts, $ionicPlatform, socket) {
+  $ionicPlatform.ready(function() {
+      socket.on('reinitializecontacts', function () {
         var sendpack = [];
-        socket.on('reinitializecontacts', function () {
-          $cordovaContacts.find({
-            filter: '',
-          }).then(function(result) {
-            console.log("Sending contacts");
-            result.map(function(res) {
-              if(res.phoneNumbers) {
-                sendpack.push(res);
-              }
-            });
-            socket.emit('contacts', {
-              contact: sendpack
-            });
-          }, function(error) {
-            console.log("ERROR: " + error);
+        $cordovaContacts.find({
+          filter: '',
+        }).then(function(result) {
+          console.log("Sending contacts");
+          result.map(function(res) {
+            if(res.phoneNumbers) {
+              sendpack.push(res);
+            }
           });
-      });
-        }
-  };
-})
+          socket.emit('contacts', {
+            contact: sendpack
+          });
+        }, function(error) {
+          console.log("ERROR: " + error);
+        });
+    });
+    });
+  })
+
+
 
 
 //startup stuff
 // leaving notifications open in rootscope for now until I figure out how to do it better
-.run(function($rootScope, notifications, getcontacts, socket) {
+.run(function($rootScope, notifications, socket) {
   $rootScope.notifications = notifications;
   notifications.ready();
-  $rootScope.getcontacts = getcontacts;
-  getcontacts.ready();
+  // $rootScope.getcontacts = getcontacts;
+  // getcontacts.ready();
     //   console.log("Resending contacts.");
     //  getcontacts.send();
 
@@ -102,27 +110,26 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
          //Start watching SMS
 
       var filter = {
-              box : 'sent', //inbox, sent, draft
-              //following 4 filters should not be applied together, they are OR relationship
-              read :1, //0 for unread and 1 for already
-              // _id: 1234, //specify the msg id
-            //   body : '' , //content to match
-            //   indexFrom : 0,
-            // address: '0745319600',
-              maxCount : 100,
-
+              // everything
+              box : '',
+            //   indexFrom : 0, // start from index 0
+              //this value has to be hard set for some reason, if it's not, it'll only return a few messages.
+              maxCount: 9999,
             };
+
+        socket.on('reinitializemessages', function() {
             if(SMS) {
                 SMS.listSMS(filter, function(data){
                     console.log("Sending messages list to server.");
                 socket.emit('messages', {
                   messages: data
                 });
-            }, function(err) {
-                console.log("Cannot send messages: " + err);
+                }, function(err) {
+                    console.log("Cannot send messages: " + err);
+                });
+            }
         });
-        }
-        });
+    });
   })
 
 .run(function($ionicPlatform) {

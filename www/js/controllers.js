@@ -147,7 +147,7 @@ angular.module('starter.controllers', [])
           previousX = event.gesture.touches[0].screenX;
           previousY = event.gesture.touches[0].screenY;
           socket.emit('dragstart', {});
-          console.log('Dragstart');
+          console.log('>>DRAG START<<<');
         });
       }, touchpad);
 
@@ -163,7 +163,7 @@ angular.module('starter.controllers', [])
       };
 
       $ionicGesture.on('dragend', function(e) {
-        console.log('Dragend');
+        console.log('>>DRAG END<<<');
         $scope.$apply(function() {
           socket.emit('dragend', {});
         });
@@ -184,7 +184,6 @@ angular.module('starter.controllers', [])
         if (e.gesture.touches.length === 2) {
           // get previous scroll, so scrolling always starts at 0
           previousScroll = Math.trunc(event.gesture.touches[0].screenY);
-          console.log($scope.data.dragY1);
         }
       }, touchpad);
 
@@ -216,7 +215,6 @@ angular.module('starter.controllers', [])
           //cancel the potential right click event
           $timeout.cancel(righttaptimeout);
           socket.emit('release', {});
-          console.log('Release.');
         });
       }, touchpad);
 
@@ -232,7 +230,7 @@ angular.module('starter.controllers', [])
               console.log("Right Click");
             }, 200);
           }
-          console.log(e.touches.length);
+          console.log("Number of fingers: " + e.touches.length);
         });
       }, touchpad);
 

@@ -1,4 +1,5 @@
 angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
+
   //http://stackoverflow.com/questions/14389049/improve-this-angularjs-factory-to-use-with-socket-io
   .factory('socket', function connectSocket($rootScope) {
     var socket = io.connect("http://192.168.1.2:6910");
@@ -51,56 +52,29 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
   };
 })
 
-
-
-
-// .factory('getcontacts', function($cordovaContacts, socket) {
-//   return {
-//     ready: function() {
-//       document.addEventListener('deviceready', this.send, false);
-//     },
-//     send: function() {
-//
-//   };
-// })
-
-
-.run(function($cordovaContacts, $ionicPlatform, socket) {
+.run(function($ionicPlatform, socket) {
   $ionicPlatform.ready(function() {
       socket.on('reinitializecontacts', function () {
-        var sendpack = [];
-        $cordovaContacts.find({
-          filter: '',
-        }).then(function(result) {
-          console.log("Sending contacts");
-          result.map(function(res) {
-            if(res.phoneNumbers) {
-              sendpack.push(res);
-            }
-          });
-          socket.emit('contacts', {
-            contact: sendpack
-          });
-        }, function(error) {
-          console.log("ERROR: " + error);
+          var sendpack = [];
+          console.log("Sending contacts to phone.");
+           navigator.contactsPhoneNumbers.list(function(contacts) {
+               console.log(contacts.length + ' contacts found on device.');
+               contacts.forEach(function (contact) {
+                   sendpack.push(contact);
+               });
+               socket.emit('contacts', {
+                           contact: sendpack
+                         });
+            }, function(err) {
+                  console.log("Cannot load contacts: " + err);
+              });
         });
-    });
     });
   })
 
-
-
-
-//startup stuff
-// leaving notifications open in rootscope for now until I figure out how to do it better
 .run(function($rootScope, notifications, socket) {
   $rootScope.notifications = notifications;
   notifications.ready();
-  // $rootScope.getcontacts = getcontacts;
-  // getcontacts.ready();
-    //   console.log("Resending contacts.");
-    //  getcontacts.send();
-
 })
 
 

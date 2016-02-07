@@ -23,9 +23,22 @@
     "cordova-plugin-splashscreen",
     "cordova-plugin-statusbar",
     "ionic-plugin-keyboard",
-    "cordova-plugin-keyboard"
+    "cordova-plugin-vibration",
+    "cordova-plugin-keyboard",
+    {
+      "locator": "https://github.com/coconauts/NotificationListener-cordova",
+      "id": "net.coconauts.notification-listener"
+    },
+    "nl.x-services.plugins.insomnia",
+    "cordova-plugin-sms",
+    "com.dbaq.cordova.contactsPhoneNumbers"
   ],
   "cordovaPlatforms": [
-    "android"
+    "android",
+    {
+      "platform": "android",
+      "version": "",
+      "locator": "android"
+    }
   ]
 }

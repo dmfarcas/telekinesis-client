@@ -2,7 +2,7 @@ angular.module('telekinesis', ['ionic', 'starter.controllers', 'ngCordova'])
 
   //http://stackoverflow.com/questions/14389049/improve-this-angularjs-factory-to-use-with-socket-io
   .factory('socket', function connectSocket($rootScope) {
-    var socket = io.connect("http://192.168.1.2:6910");
+    var socket = io.connect("http://192.168.1.28:6910");
     return {
       on: function(eventName, callback) {
         socket.on(eventName, function() {
